@@ -28,7 +28,9 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 # lesson 6 -9
-Client_ID= json.loads(open('client_secrets.json','r').read())['web']['client_id']
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
+APPLICATION_NAME = "Restaurant Menu Application"
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -112,9 +114,6 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
-
-
-
 
 #Create a state token to prevent request forgery
 #store it in the session for later validations
