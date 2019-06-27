@@ -110,7 +110,7 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
 
     data = answer.json()
-
+    login_session['provider']= 'google'
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
@@ -229,7 +229,30 @@ def fbconnect():
     return output
 
 
-@app.route('/fbdisconnect')
+
+@app.route('/disconnect')
+def disconnect():
+    if 'provider' in login_session:
+        if login_session['provider']=='google':
+            gdisconnect()
+            del login_session['gplus_id']
+            #del login_session['credentials']
+        if login_session['provider']=='facebook':
+            fbdisconnect()
+            del login_session['facebook_id']
+
+        del login_session['username']
+        del login_session['email']
+        del login_session['user_id']
+        del login_session['picture']
+        del login_session['provider']
+        flash("You have successfully been logged out.")
+        return redirect(url_for('showRestaurants'))
+    else:
+        flash("You were not logged in to begin with.")
+        return redirect(url_for('showRestaurants'))
+
+#@app.route('/fbdisconnect')
 def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
@@ -237,14 +260,15 @@ def fbdisconnect():
     url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
-    print result
+
+
     return "you have been logged out"
 
 
 
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
-@app.route('/gdisconnect')
+#@app.route('/gdisconnect')
 def gdisconnect():
     access_token =login_session.get('access_token')
 
@@ -255,17 +279,17 @@ def gdisconnect():
         url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
         h = httplib2.Http()
         result = h.request(url, 'GET')[0]
-        print result
-        if result['status'] == '200':
-            # Reset the user's sesson.
-            del login_session['access_token']
-            del login_session['gplus_id']
-            del login_session['username']
-            del login_session['email']
-            del login_session['picture']
-            response = make_response(json.dumps('Successfully disconnected.'), 200)
-            response.headers['Content-Type'] = 'application/json'
-            return response
+        #print result
+        #if result['status'] == '200':
+            ## Reset the user's sesson.
+            #del login_session['access_token']
+            #del login_session['gplus_id']
+            #del login_session['username']
+            #del login_session['email']
+            #del login_session['picture']
+            #response = make_response(json.dumps('Successfully disconnected.'), 200)
+            #response.headers['Content-Type'] = 'application/json'
+            #return response
     else:
         print "Access Token None"
         print access_token
